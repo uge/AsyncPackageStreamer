@@ -5,7 +5,6 @@
 class IPlatformFile;
 class FStreamingNetworkPlatformFile;
 class FPakPlatformFile;
-struct FStringAssetReference;
 struct FStreamableManager;
 
 namespace EAssetStreamingMode

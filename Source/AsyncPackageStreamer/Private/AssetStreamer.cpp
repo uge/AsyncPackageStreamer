@@ -1,10 +1,11 @@
 // Copyright (c) 2014 Moritz Wundke & Ruben Avalos Elvira
 
+#include "AssetStreamer.h"
 #include "AsyncPackageStreamerPrivatePCH.h"
 #include "IPlatformFilePak.h"
 #include "StreamingNetworkPlatformFile.h"
 #include "FileManagerGeneric.h"
-#include "AssetStreamer.h"
+#include "Runtime/Engine/Classes/Engine/StreamableManager.h"
 
 FAssetStreamer::FAssetStreamer()
     : NetPlatform(new FStreamingNetworkPlatformFile())
@@ -13,9 +14,9 @@ FAssetStreamer::FAssetStreamer()
     
 }
 
-bool FAssetStreamer::Initialize(FStreamableManager* StreamableManager)
+bool FAssetStreamer::Initialize(FStreamableManager* StreamableManagerIn)
 {
-    check(StreamableManager);
+    check(StreamableManagerIn);
     if (!bInitialized)
     {
         // Load config values
@@ -50,7 +51,7 @@ bool FAssetStreamer::Initialize(FStreamableManager* StreamableManager)
     else
     {
         // We aquire the StreamableManager pointer only on successfull initialization
-        this->StreamableManager = StreamableManager;
+        this->StreamableManager = StreamableManagerIn;
     }
 
     return bInitialized;
@@ -62,7 +63,7 @@ bool FAssetStreamer::StreamPackage(const FString& PakFileName, IAssetStreamerLis
     Listener = NULL;
 
     const bool bRemote = (DesiredMode == EAssetStreamingMode::Remote);
-    if (!(bRemote && UseRemote(CmdLine) || !bRemote && UseLocal(CmdLine)))
+    if (!((bRemote && UseRemote(CmdLine)) || (!bRemote && UseLocal(CmdLine))))
     {
         Unlock();
         return false;
@@ -74,7 +75,7 @@ bool FAssetStreamer::StreamPackage(const FString& PakFileName, IAssetStreamerLis
     const FString FilePath = bRemote ? ResolveRemotePath(PakFileName) : ResolveLocalPath(PakFileName);
 
     // Make sure the Pak file is actually there
-    FPakFile PakFile(*FilePath, bSigned);
+    FPakFile PakFile(&FPlatformFileManager::Get().GetPlatformFile(), *FilePath, bSigned);
     if (!PakFile.IsValid())
     {
         Unlock();

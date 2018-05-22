@@ -4,7 +4,11 @@ namespace UnrealBuildTool.Rules
 {
 	public class AsyncPackageStreamer : ModuleRules
 	{
+#if WITH_FORWARDED_MODULE_RULES_CTOR
+		public AsyncPackageStreamer(ReadOnlyTargetRules Target) : base(Target)
+#else
 		public AsyncPackageStreamer(TargetInfo Target)
+#endif
 		{
 			PublicIncludePaths.AddRange(
 				new string[] {
